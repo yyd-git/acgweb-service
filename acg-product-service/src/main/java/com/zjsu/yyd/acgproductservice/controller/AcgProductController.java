@@ -100,4 +100,15 @@ public class AcgProductController {
                 : Result.error("产品不存在");
     }
 
+    @Operation(summary = "分页查询 ACG 产品", description = "支持名称模糊查询 + 类型筛选")
+    @GetMapping("/page")
+    public Result listByPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) AcgProductType type
+    ) {
+        return Result.success(service.listByPage(page, size, name, type));
+    }
+
 }

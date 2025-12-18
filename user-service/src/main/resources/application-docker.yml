@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:mysql://acg-demo-mysql:3306/acg_user_db?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 00000712
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        show_sql: true
+      jakarta:
+        persistence:
+          jdbc:
+            url: jdbc:mysql://acg-demo-mysql:3306/acg_user_db?useSSL=false&serverTimezone=Asia/Shanghai
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

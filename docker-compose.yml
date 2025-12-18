@@ -1,0 +1,172 @@
+version: "3.9"
+
+services:
+  # =====================
+  # Nacos 服务
+  # =====================
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: nacos
+    environment:
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      NACOS_AUTH_ENABLE: "false"
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - ./nacos-data:/home/nacos/data
+    networks:
+      - acg-demo-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8848/nacos/v1/ns/operator/servers || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # =====================
+  # MySQL 服务
+  # =====================
+  mysql:
+    image: mysql:8.0
+    container_name: acg-demo-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "00000712"
+      MYSQL_DATABASE: acg_demo
+      MYSQL_USER: acg
+      MYSQL_PASSWORD: "acg123456"
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    networks:
+      - acg-demo-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # =====================
+  # ACG Product Service
+  # =====================
+  acg-product-service:
+    build:
+      context: ./acg-product-service
+    container_name: acg-product-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_started
+    networks:
+      - acg-demo-network
+
+  # =====================
+  # ACG Rating Service
+  # =====================
+  acg-rating-service:
+    build:
+      context: ./acg-rating-service
+    container_name: acg-rating-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_started
+      acg-product-service:
+        condition: service_started
+    networks:
+      - acg-demo-network
+
+  # =====================
+  # User Service
+  # =====================
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nacos:
+        condition: service_started
+      acg-product-service:
+        condition: service_started
+    networks:
+      - acg-demo-network
+
+  # =====================
+  # Gateway Service
+  # =====================
+  gateway-service:
+    build:
+      context: ./gateway-service
+    container_name: gateway-service
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    depends_on:
+      nacos:
+        condition: service_started
+      user-service:
+        condition: service_started
+      acg-product-service:
+        condition: service_started
+      acg-rating-service:
+        condition: service_started
+    networks:
+      - acg-demo-network
+
+  # =====================
+  # 前端静态页面（Nginx）
+  # =====================
+  frontend:
+    image: nginx:alpine
+    container_name: acg-frontend
+    restart: always
+    ports:
+      - "5500:80"
+    volumes:
+      - ./acg-frontend:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - acg-demo-network
+
+# =====================
+# 网络和数据卷
+# =====================
+networks:
+  acg-demo-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+

@@ -1,11 +1,15 @@
 package com.zjsu.yyd.acgproductservice.service;
 
 import com.zjsu.yyd.acgproductservice.model.AcgProduct;
+import com.zjsu.yyd.acgproductservice.model.AcgProductPageDto;
 import com.zjsu.yyd.acgproductservice.model.AcgProductType;
 import com.zjsu.yyd.acgproductservice.repository.AcgProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * ACG 产品业务层
@@ -86,6 +90,27 @@ public class AcgProductService {
                 })
                 .orElse(false);
     }
+
+
+    // 分页查询 + 名称模糊 + 类型筛选
+    public AcgProductPageDto listByPage(int page, int size, String name, AcgProductType type) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<AcgProduct> resultPage = repository.findByNameAndType(
+                (name == null || name.isEmpty()) ? null : name,
+                type,
+                pageable
+        );
+
+        AcgProductPageDto dto = new AcgProductPageDto();
+        dto.setTotalElements(resultPage.getTotalElements());
+        dto.setTotalPages(resultPage.getTotalPages());
+        dto.setPage(resultPage.getNumber());
+        dto.setSize(resultPage.getSize());
+        dto.setContent(resultPage.getContent());
+
+        return dto;
+    }
+
 
 
 }
