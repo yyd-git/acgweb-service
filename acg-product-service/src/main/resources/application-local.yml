@@ -5,6 +5,11 @@ spring:
   application:
     name: acg-product-service
 
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
   datasource:
     url: jdbc:mysql://localhost:3306/acg_product_db?useSSL=false&serverTimezone=Asia/Shanghai
     username: root
@@ -18,9 +23,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848     # 本地访问 Nacos
-        heart-beat-interval: 5000       # 5 秒发心跳
-        heart-beat-timeout: 20000       # 20 秒无响应视为挂了
+        server-addr: localhost:8848
+        heart-beat-interval: 5000
+        heart-beat-timeout: 20000
         health-check-url: /actuator/health
         ephemeral: true
 
@@ -32,7 +37,7 @@ management:
 
 feign:
   circuitbreaker:
-    enabled: true  # 开启 Feign 熔断
+    enabled: true
 
 resilience4j:
   circuitbreaker:
@@ -46,4 +51,7 @@ resilience4j:
 
 jwt:
   secret: "MySuperSecureJwtSecretKeyForHS256_123456"
-  expiration: 86400000  # 24h
+  expiration: 86400000
+
+file:
+  upload-dir: C:\Users\16754\OneDrive\Desktop\桌面备份\minservice\期末大作业\acg-back\app-data   # 本地 Windows 绝对路径，存放 cover 和 resource 文件夹

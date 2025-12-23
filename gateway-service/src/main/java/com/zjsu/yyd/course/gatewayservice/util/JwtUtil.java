@@ -7,16 +7,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
 
 @Component
 public class JwtUtil {
 
     @Value("${jwt.secret}")
     private String secret;
-
-    @Value("${jwt.expiration}")
-    private long expiration;
 
     private Key key;
 
@@ -25,19 +21,12 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    // Gateway **不会生成 token**，这里只是保留方法，但不用
+    // Gateway 不生成 token（保留但不用）
     public String generateToken(String username) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+        throw new UnsupportedOperationException("Gateway 不负责生成 Token");
     }
 
-    // 解析 Token
+    /** 解析 token，返回 Claims */
     public Claims parseToken(String token) throws JwtException {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -46,13 +35,32 @@ public class JwtUtil {
                 .getBody();
     }
 
-    // ★★★★★ 你缺少的就是这个
+    /** 校验 token 是否合法 */
     public boolean validateToken(String token) {
         try {
             parseToken(token);
             return true;
         } catch (JwtException e) {
             return false;
+        }
+    }
+
+    /** ⭐ 从 token 中获取 username（subject） */
+    public String getUsername(String token) {
+        try {
+            return parseToken(token).getSubject();
+        } catch (JwtException e) {
+            return null;
+        }
+    }
+
+    /** ⭐⭐ 从 token 中获取 userId（自定义 claim） */
+    public Long getUserId(String token) {
+        try {
+            Object userId = parseToken(token).get("userId");
+            return userId == null ? null : Long.valueOf(userId.toString());
+        } catch (JwtException e) {
+            return null;
         }
     }
 }

@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   # =====================
@@ -69,6 +69,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+    volumes:
+      - ./acg-product-data:/app/data   # 宿主机绑定卷
     depends_on:
       mysql:
         condition: service_healthy
@@ -155,7 +157,7 @@ services:
     ports:
       - "5500:80"
     volumes:
-      - ./acg-frontend:/usr/share/nginx/html:ro
+      - ./acg-frontend/dist:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - acg-demo-network
@@ -169,4 +171,6 @@ networks:
 
 volumes:
   mysql_data:
+  # 宿主机绑定卷不需要在这里声明，但如果想用 Docker 卷可以声明：
+  # acg-product-data:
 

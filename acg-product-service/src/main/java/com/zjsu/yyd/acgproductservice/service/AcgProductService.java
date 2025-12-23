@@ -4,9 +4,15 @@ import com.zjsu.yyd.acgproductservice.model.AcgProduct;
 import com.zjsu.yyd.acgproductservice.model.AcgProductPageDto;
 import com.zjsu.yyd.acgproductservice.model.AcgProductType;
 import com.zjsu.yyd.acgproductservice.repository.AcgProductRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,51 +24,27 @@ import org.springframework.data.domain.Pageable;
 @Service
 public class AcgProductService {
 
-    /**
-     * ACG 产品数据访问层
-     */
     private final AcgProductRepository repository;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     public AcgProductService(AcgProductRepository repository) {
         this.repository = repository;
     }
 
-    /**
-     * 新增 ACG 产品
-     *
-     * @param product ACG 产品实体
-     * @return 保存后的产品信息
-     */
     public AcgProduct add(AcgProduct product) {
         return repository.save(product);
     }
 
-    /**
-     * 查询所有未被软删除的 ACG 产品
-     *
-     * @return ACG 产品列表
-     */
     public List<AcgProduct> listAll() {
         return repository.findByIsDeletedFalse();
     }
 
-    /**
-     * 根据产品类型查询 ACG 产品
-     *
-     * @param type 产品类型（ANIME / COMIC / NOVEL / GAME）
-     * @return 对应类型的 ACG 产品列表
-     */
     public List<AcgProduct> listByType(AcgProductType type) {
         return repository.findByTypeAndIsDeletedFalse(type);
     }
 
-    /**
-     * 根据 ID 软删除 ACG 产品
-     * 仅将 isDeleted 标记为 true，不进行物理删除
-     *
-     * @param id 产品 ID
-     * @return 删除是否成功
-     */
     public boolean delete(Long id) {
         return repository.findById(id).map(product -> {
             product.setIsDeleted(true);
@@ -70,10 +52,7 @@ public class AcgProductService {
             return true;
         }).orElse(false);
     }
-    /**
-     * 根据 ID 查找 ACG 产品
 
-     */
     public AcgProduct getById(Long id) {
         return repository.findById(id)
                 .filter(product -> !product.getIsDeleted())
@@ -91,8 +70,6 @@ public class AcgProductService {
                 .orElse(false);
     }
 
-
-    // 分页查询 + 名称模糊 + 类型筛选
     public AcgProductPageDto listByPage(int page, int size, String name, AcgProductType type) {
         Pageable pageable = PageRequest.of(page, size);
         Page<AcgProduct> resultPage = repository.findByNameAndType(
@@ -111,6 +88,47 @@ public class AcgProductService {
         return dto;
     }
 
+    public String saveCover(MultipartFile file) throws IOException {
 
+        System.out.println("===== saveCover CALLED =====");
+        System.out.println("uploadDir = " + uploadDir);
+        System.out.println("originalFilename = " + file.getOriginalFilename());
+
+        // ===== 1. 确保 cover 目录存在 =====
+        File coverDir = new File(uploadDir, "cover");
+        System.out.println("coverDir absolutePath = " + coverDir.getAbsolutePath());
+        System.out.println("coverDir exists before mkdirs = " + coverDir.exists());
+
+        if (!coverDir.exists()) {
+            boolean created = coverDir.mkdirs();
+            System.out.println("mkdirs result = " + created);
+        }
+
+        System.out.println("coverDir exists after mkdirs = " + coverDir.exists());
+        System.out.println("coverDir isDirectory = " + coverDir.isDirectory());
+        System.out.println("coverDir canWrite = " + coverDir.canWrite());
+
+        // ===== 2. 生成文件名 =====
+        String originalFilename = file.getOriginalFilename();
+        String ext = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        String fileName = UUID.randomUUID() + ext;
+        System.out.println("generated fileName = " + fileName);
+
+        // ===== 3. 保存到磁盘 =====
+        File dest = new File(coverDir, fileName);
+        System.out.println("dest absolutePath = " + dest.getAbsolutePath());
+
+        file.transferTo(dest);
+
+        System.out.println("file saved success");
+
+        // ===== 4. 返回 Web 路径 =====
+        return "/cover/" + fileName;
+    }
 
 }
+

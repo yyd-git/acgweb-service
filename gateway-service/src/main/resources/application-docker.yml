@@ -52,6 +52,18 @@ spring:
           uri: lb://acg-rating-service
           predicates:
             - Path=/acg-rating/**
+        - id: acg-product-cover
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/cover/**
+        - id: acg-product-detail-resource
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/resource/**
+        - id: acg-product-resource
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/acg-resource/**
 
 jwt:
   secret: "MySuperSecureJwtSecretKeyForHS256_123456"

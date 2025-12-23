@@ -2,6 +2,7 @@ package com.zjsu.yyd.userservice.service;
 
 import com.zjsu.yyd.userservice.model.User;
 import com.zjsu.yyd.userservice.repository.UserRepository;
+import com.zjsu.yyd.userservice.util.JwtUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -9,26 +10,22 @@ import org.springframework.util.DigestUtils;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
-    /** 密码盐值 */
     private static final String SALT = "com.acg";
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    /**
-     * 用户注册
-     */
+    /** 注册 */
     public boolean register(String username, String password) {
-
         if (userRepository.findByUserNameAndIsDeletedFalse(username).isPresent()) {
             return false;
         }
 
-        String encryptedPassword =
-                DigestUtils.md5DigestAsHex((SALT + password).getBytes());
-
+        String encryptedPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
         User user = new User();
         user.setUserName(username);
         user.setUserPassword(encryptedPassword);
@@ -37,22 +34,31 @@ public class UserService {
         return true;
     }
 
-    /**
-     * 用户登录
-     */
-    public boolean login(String username, String password) {
-
+    /** 登录并返回 JWT token，失败返回 null */
+//    public String loginAndGetToken(String username, String password) {
+//        String encryptedPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
+//
+//        boolean valid = userRepository.findByUserNameAndIsDeletedFalse(username)
+//                .map(user -> user.getUserPassword().equals(encryptedPassword))
+//                .orElse(false);
+//
+//        if (!valid) return null;
+//
+//        // 登录成功，生成 token
+//        return jwtUtil.generateToken(username);
+//    }
+    public String loginAndGetToken(String username, String password) {
         String encryptedPassword =
                 DigestUtils.md5DigestAsHex((SALT + password).getBytes());
 
         return userRepository.findByUserNameAndIsDeletedFalse(username)
-                .map(user -> user.getUserPassword().equals(encryptedPassword))
-                .orElse(false);
+                .filter(user -> user.getUserPassword().equals(encryptedPassword))
+                .map(user -> jwtUtil.generateToken(user.getId(), user.getUserName()))
+                .orElse(null);
     }
 
-    /**
-     * 软删除用户
-     */
+
+    /** 软删除 */
     public boolean delete(Long id) {
         return userRepository.findById(id).map(user -> {
             user.setIsDeleted(true);
@@ -60,9 +66,8 @@ public class UserService {
             return true;
         }).orElse(false);
     }
-    /**
-     * 根据Id查找用户
-     */
+
+    /** 根据 ID 查询用户 */
     public User getById(Long id) {
         return userRepository.findById(id)
                 .filter(user -> !user.getIsDeleted())

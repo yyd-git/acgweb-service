@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/acg-product")
@@ -20,16 +21,78 @@ public class AcgProductController {
         this.service = service;
     }
 
-    @Operation(
-            summary = "新增 ACG 产品",
-            description = "新增一个 ACG 产品（动漫 / 漫画 / 轻小说 / 游戏），默认未删除"
-    )
-    @PostMapping
+//    @Operation(
+//            summary = "新增 ACG 产品",
+//            description = "新增一个 ACG 产品（动漫 / 漫画 / 轻小说 / 游戏），默认未删除"
+//    )
+//    @PostMapping
+//    public Result add(
+//            @Parameter(description = "ACG 产品对象", required = true)
+//            @RequestBody AcgProduct product) {
+//        return Result.success(service.add(product));
+//    }
+
+//    @PostMapping
+//    @Operation(summary = "新增 ACG 产品", description = "新增一个 ACG 产品（可上传封面图片）")
+//    public Result add(
+//            @Parameter(description = "ACG 产品对象", required = true)
+//            @RequestPart("product") AcgProduct product,
+//            @Parameter(description = "封面图片文件")
+//            @RequestPart(value = "coverFile", required = false) MultipartFile coverFile
+//    ) {
+//        try {
+//            if (coverFile != null && !coverFile.isEmpty()) {
+//                String coverPath = service.saveCover(coverFile);
+//                product.setCoverPath(coverPath);
+//            }
+//            return Result.success(service.add(product));
+//        } catch (Exception e) {
+//            return Result.error("上传封面失败：" + e.getMessage());
+//        }
+//    }
+
+    @PostMapping(consumes = "multipart/form-data")
+    @Operation(summary = "新增 ACG 产品", description = "新增一个 ACG 产品（可上传封面图片）")
     public Result add(
-            @Parameter(description = "ACG 产品对象", required = true)
-            @RequestBody AcgProduct product) {
-        return Result.success(service.add(product));
+            @Parameter(description = "产品名称", required = true) @RequestParam String name,
+            @Parameter(description = "产品简介") @RequestParam(required = false) String description,
+            @Parameter(description = "产品类型", required = true, example = "ANIME") @RequestParam AcgProductType type,
+            @Parameter(description = "动画制作公司") @RequestParam(required = false) String studio,
+            @Parameter(description = "集数") @RequestParam(required = false) Integer episodeCount,
+            @Parameter(description = "作者") @RequestParam(required = false) String author,
+            @Parameter(description = "章节数") @RequestParam(required = false) Integer chapterCount,
+            @Parameter(description = "卷数") @RequestParam(required = false) Integer volumeCount,
+            @Parameter(description = "游戏开发商") @RequestParam(required = false) String developer,
+            @Parameter(description = "游戏平台") @RequestParam(required = false) String platform,
+            @Parameter(description = "封面图片文件") @RequestPart(value = "coverFile", required = false) MultipartFile coverFile
+    ) {
+        try {
+            AcgProduct product = new AcgProduct();
+            product.setName(name);
+            product.setDescription(description);
+            product.setType(type);
+            product.setStudio(studio);
+            product.setEpisodeCount(episodeCount);
+            product.setAuthor(author);
+            product.setChapterCount(chapterCount);
+            product.setVolumeCount(volumeCount);
+            product.setDeveloper(developer);
+            product.setPlatform(platform);
+
+            if (coverFile != null && !coverFile.isEmpty()) {
+                String coverPath = service.saveCover(coverFile);
+                product.setCoverPath(coverPath);
+            }
+
+            return Result.success(service.add(product));
+        } catch (Exception e) {
+            return Result.error("上传封面失败：" + e.getMessage());
+        }
     }
+
+
+
+
 
     @Operation(
             summary = "查询所有 ACG 产品",
