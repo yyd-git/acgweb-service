@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:mysql://acg-demo-mysql:3306/acg_user_db?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: "00000712"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+jwt:
+  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
+  expiration: 86400000
+

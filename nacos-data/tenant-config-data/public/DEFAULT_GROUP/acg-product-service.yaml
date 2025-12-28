@@ -1,0 +1,58 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: acg-product-service
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+  datasource:
+    url: jdbc:mysql://acg-demo-mysql:3306/acg_product_db?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: "00000712"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+        heart-beat-interval: 5000
+        heart-beat-timeout: 20000
+        health-check-url: /actuator/health
+        ephemeral: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+feign:
+  circuitbreaker:
+    enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      catalogService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+
+jwt:
+  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
+  expiration: 86400000
+
+file:
+  upload-dir: /app/data   # Docker 容器内绝对路径，挂载卷到宿主机

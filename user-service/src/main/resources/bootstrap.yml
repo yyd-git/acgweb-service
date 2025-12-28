@@ -1,0 +1,23 @@
+#spring:
+#  application:
+#    name: user-service
+#
+#  config:
+#    import: nacos:  # 核心：告诉 Spring Boot 要从 Nacos 导入配置
+#
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 127.0.0.1:8848
+#      config:
+#        server-addr: 127.0.0.1:8848
+#        file-extension: yaml
+#        name: user-service
+#        profile: local
+#        shared-configs:
+#          - data-id: common.yml
+#            refresh: true
+#
+#logging:
+#  level:
+#    com.zjsu.yyd: debug

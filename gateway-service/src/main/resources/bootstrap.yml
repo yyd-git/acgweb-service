@@ -1,0 +1,19 @@
+#spring:
+#  application:
+#    name: gateway-service
+#
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: ${NACOS_SERVER:127.0.0.1:8848}   # 启动时通过环境变量覆盖
+#        heart-beat-interval: 5000
+#        heart-beat-timeout: 20000
+#        health-check-url: /actuator/health
+#        ephemeral: true
+#      config:
+#        enabled: true
+#        extension-configs:
+#          - dataid: gateway-service-local.yml
+#            refresh: true
+#          - dataid: gateway-service-docker.yml
+#            refresh: true

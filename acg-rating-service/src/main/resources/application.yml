@@ -1,54 +1,46 @@
-#server:
-#  port: 8083
-#
-#spring:
-#  application:
-#    name: acg-rating-service
-#
-#  datasource:
-#    url: jdbc:mysql://localhost:3306/acg_rating_db?useSSL=false&serverTimezone=Asia/Shanghai
-#    username: root
-#    password: "00000712"
-#
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
-#    show-sql: true
-#
-#  cloud:
-#    nacos:
-#      discovery:
-#        server-addr: localhost:8848     # 本地访问 Nacos
-#        heart-beat-interval: 5000       # 5 秒发心跳
-#        heart-beat-timeout: 20000       # 20 秒无响应视为挂了
-#        health-check-url: /actuator/health
-#        ephemeral: true
-#
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health,info
-#
-#feign:
-#  circuitbreaker:
-#    enabled: true  # 开启 Feign 熔断
-#
-#resilience4j:
-#  circuitbreaker:
-#    instances:
-#      catalogService:
-#        registerHealthIndicator: true
-#        slidingWindowSize: 10
-#        minimumNumberOfCalls: 5
-#        failureRateThreshold: 50
-#        waitDurationInOpenState: 5s
-#
-#jwt:
-#  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
-#  expiration: 86400000  # 24h
+server:
+  port: 8083
 
 spring:
-  profiles:
-    active: local   # 或 docker，启动时可以覆盖
+  application:
+    name: acg-rating-service
+
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos:8848
+        namespace: public
+        file-extension: yaml
+        group: DEFAULT_GROUP
+        # 开启配置拉取重试
+        retry:
+          enabled: true
+          max-attempts: 10   # 最大重试次数
+          delay: 5000        # 每次重试间隔 5 秒
+          multiplier: 1.5    # 指数退避倍数
+
+  datasource:
+    url: jdbc:mysql://acg-demo-mysql:3306/acg_rating_db?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: "00000712"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+jwt:
+  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
+  expiration: 86400000
+
+# 指定从 Nacos 拉取配置
+spring.config.import: nacos:${spring.application.name}.yaml
 

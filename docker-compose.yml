@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   # =====================
-  # Nacos 服务
+  # Nacos 服务（配置中心 + 注册中心）
   # =====================
   nacos:
     image: nacos/nacos-server:v2.3.2
@@ -11,6 +11,7 @@ services:
       MODE: standalone
       PREFER_HOST_MODE: hostname
       NACOS_AUTH_ENABLE: "false"
+      TZ: Asia/Shanghai
     ports:
       - "8848:8848"
       - "9848:9848"
@@ -20,11 +21,11 @@ services:
       - acg-demo-network
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8848/nacos/v1/ns/operator/servers || exit 0"]
+      test: ["CMD-SHELL", "curl -s http://localhost:8848/nacos/v1/ns/operator/servers || exit 0"]
       interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 20s
+      retries: 5
+      start_period: 120s   # 延长启动等待到 120 秒
 
   # =====================
   # MySQL 服务
@@ -55,7 +56,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 15s
+      start_period: 20s
 
   # =====================
   # ACG Product Service
@@ -69,15 +70,17 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
     volumes:
-      - ./acg-product-data:/app/data   # 宿主机绑定卷
+      - ./acg-product-data:/app/data
     depends_on:
+      nacos:
+        condition: service_healthy
       mysql:
         condition: service_healthy
-      nacos:
-        condition: service_started
     networks:
       - acg-demo-network
+    restart: always
 
   # =====================
   # ACG Rating Service
@@ -91,15 +94,17 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
     depends_on:
+      nacos:
+        condition: service_healthy
       mysql:
         condition: service_healthy
-      nacos:
-        condition: service_started
       acg-product-service:
         condition: service_started
     networks:
       - acg-demo-network
+    restart: always
 
   # =====================
   # User Service
@@ -113,15 +118,17 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
     depends_on:
+      nacos:
+        condition: service_healthy
       mysql:
         condition: service_healthy
-      nacos:
-        condition: service_started
       acg-product-service:
         condition: service_started
     networks:
       - acg-demo-network
+    restart: always
 
   # =====================
   # Gateway Service
@@ -135,9 +142,10 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos:8848
     depends_on:
       nacos:
-        condition: service_started
+        condition: service_healthy
       user-service:
         condition: service_started
       acg-product-service:
@@ -146,9 +154,10 @@ services:
         condition: service_started
     networks:
       - acg-demo-network
+    restart: always
 
   # =====================
-  # 前端静态页面（Nginx）
+  # 前端（Nginx）
   # =====================
   frontend:
     image: nginx:alpine
@@ -163,7 +172,7 @@ services:
       - acg-demo-network
 
 # =====================
-# 网络和数据卷
+# 网络 & 数据卷
 # =====================
 networks:
   acg-demo-network:
@@ -171,6 +180,4 @@ networks:
 
 volumes:
   mysql_data:
-  # 宿主机绑定卷不需要在这里声明，但如果想用 Docker 卷可以声明：
-  # acg-product-data:
 
