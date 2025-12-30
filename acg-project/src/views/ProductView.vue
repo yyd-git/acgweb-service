@@ -111,7 +111,6 @@
           v-for="c in comments"
           :key="c.id"
           class="comment-item"
-          shadow="hover"
         >
           <p class="comment-username">{{ c.username }}：</p>
           <p class="comment-content">{{ c.content }}</p>
@@ -210,26 +209,10 @@ export default {
         this.$message.error("获取资源失败");
       }
     },
-    // downloadResource(path, name) {
-    //   if (!path) return;
-    //   const url = `${this.gatewayUrl}/${path}`;
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.download = name || "资源文件";
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   document.body.removeChild(link);
-    // },
-
     downloadResource(path, name) {
       if (!path) return;
-
-      // 保证 path 以 / 开头（后端返回绝对 Web 路径）
       const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-
-      // 网关 + Web 资源路径
       const url = `${this.gatewayUrl}${normalizedPath}`;
-
       const link = document.createElement("a");
       link.href = url;
       link.download = name || "资源文件";
@@ -237,7 +220,6 @@ export default {
       link.click();
       document.body.removeChild(link);
     },
-
     openUploadDialog() {
       this.uploadDialogVisible = true;
       this.uploadForm = { file: null, name: "", description: "" };
@@ -422,26 +404,28 @@ export default {
   align-self: center;
 }
 
+/* 打分 & 评论输入卡片 */
 .common-card {
   width: 80%;
   margin: 0 auto 20px auto;
   text-align: center;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
 
-.rating-card {
-  padding: 15px;
-}
-
-.comment-card {
-  padding: 15px;
+.rating-card, .comment-card {
+  padding: 20px;
 }
 
 .btn-container {
-  margin-top: 20px; /* 按钮下移 */
+  margin-top: 20px;
   display: flex;
-  justify-content: center; /* 按钮居中 */
+  justify-content: center;
 }
 
+/* 评论展示卡片样式（与资源/打分区分开） */
 .comment-list {
   display: flex;
   flex-direction: column;
@@ -451,18 +435,23 @@ export default {
 
 .comment-item {
   width: 80%;
-  padding: 10px;
+  padding: 15px 20px;
+  border-radius: 15px;
+  background: #ffffff;
+  opacity: 0.95;
+  border: 1px solid #ffdd55;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .comment-username {
   font-weight: bold;
-  color: #ffdd55;
+  color: #ff9900;
   text-align: left;
 }
 
 .comment-content {
-  color: #000;
-  text-align: center;
+  color: #333;
+  text-align: left;
   margin: 5px 0 0 0;
 }
 </style>

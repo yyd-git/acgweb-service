@@ -5,42 +5,51 @@ spring:
   application:
     name: acg-rating-service
 
+#  cloud:
+#    nacos:
+#      config:
+#        server-addr: nacos:8848
+#        namespace: public
+#        file-extension: yaml
+#        group: DEFAULT_GROUP
+#        # 开启配置拉取重试
+#        retry:
+#          enabled: true
+#          max-attempts: 10   # 最大重试次数
+#          delay: 5000        # 每次重试间隔 5 秒
+#          multiplier: 1.5    # 指数退避倍数
+#
+#  datasource:
+#    url: jdbc:mysql://acg-demo-mysql:3306/acg_rating_db?useSSL=false&serverTimezone=Asia/Shanghai
+#    username: root
+#    password: "00000712"
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    database-platform: org.hibernate.dialect.MySQL8Dialect
+#    show-sql: true
+#
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info
+#
+#jwt:
+#  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
+#  expiration: 86400000
+#
+## 指定从 Nacos 拉取配置
+#spring.config.import: nacos:${spring.application.name}.yaml
+#
+
   cloud:
     nacos:
       config:
-        server-addr: nacos:8848
-        namespace: public
         file-extension: yaml
         group: DEFAULT_GROUP
-        # 开启配置拉取重试
-        retry:
-          enabled: true
-          max-attempts: 10   # 最大重试次数
-          delay: 5000        # 每次重试间隔 5 秒
-          multiplier: 1.5    # 指数退避倍数
+        namespace: public
 
-  datasource:
-    url: jdbc:mysql://acg-demo-mysql:3306/acg_rating_db?useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: "00000712"
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    show-sql: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-
-jwt:
-  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
-  expiration: 86400000
-
-# 指定从 Nacos 拉取配置
 spring.config.import: nacos:${spring.application.name}.yaml
-

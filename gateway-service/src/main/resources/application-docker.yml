@@ -1,76 +1,76 @@
-#server:
-#  port: 8090
-#
-#spring:
-#  application:
-#    name: gateway-service
-#
-#  cloud:
-#    nacos:
-#      discovery:
-#        # Docker 内：通过容器名访问 Nacos
-#        server-addr: nacos:8848
-#
-#    gateway:
-#      globalcors:
-#        add-to-simple-url-handler-mapping: true
-#        cors-configurations:
-#          '[/**]':
-#            # Docker 部署时，前端一般通过宿主机访问
-#            # 所以仍然放行 localhost / 127.0.0.1
-#            allowedOriginPatterns:
-#              - http://localhost:5173
-#              - http://localhost:8080
-#              - http://127.0.0.1:5500
-#              - http://localhost:5500
-#            allowedMethods: "*"
-#            allowedHeaders: "*"
-#            allowCredentials: true
-#            maxAge: 3600
-#
-#      discovery:
-#        locator:
-#          enabled: false
-#
-#      routes:
-#        - id: user-service
-#          uri: lb://user-service
-#          predicates:
-#            - Path=/user/**
-#
-#        - id: acg-product-service
-#          uri: lb://acg-product-service
-#          predicates:
-#            - Path=/acg-product/**
-#
-#        - id: acg-comment-service
-#          uri: lb://acg-rating-service
-#          predicates:
-#            - Path=/acg-comment/**
-#
-#        - id: acg-rating-service
-#          uri: lb://acg-rating-service
-#          predicates:
-#            - Path=/acg-rating/**
-#        - id: acg-product-cover
-#          uri: lb://acg-product-service
-#          predicates:
-#            - Path=/cover/**
-#        - id: acg-product-detail-resource
-#          uri: lb://acg-product-service
-#          predicates:
-#            - Path=/resource/**
-#        - id: acg-product-resource
-#          uri: lb://acg-product-service
-#          predicates:
-#            - Path=/acg-resource/**
-#
-#jwt:
-#  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
-#  expiration: 86400000
-#  whitelist:
-#    - /user/login
-#    - /user/register
+server:
+  port: 8090
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    nacos:
+      discovery:
+        # Docker 内：通过容器名访问 Nacos
+        server-addr: nacos:8848
+
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            # Docker 部署时，前端一般通过宿主机访问
+            # 所以仍然放行 localhost / 127.0.0.1
+            allowedOriginPatterns:
+              - http://localhost:5173
+              - http://localhost:8080
+              - http://127.0.0.1:5500
+              - http://localhost:5500
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      discovery:
+        locator:
+          enabled: false
+
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+
+        - id: acg-product-service
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/acg-product/**
+
+        - id: acg-comment-service
+          uri: lb://acg-rating-service
+          predicates:
+            - Path=/acg-comment/**
+
+        - id: acg-rating-service
+          uri: lb://acg-rating-service
+          predicates:
+            - Path=/acg-rating/**
+        - id: acg-product-cover
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/cover/**
+        - id: acg-product-detail-resource
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/resource/**
+        - id: acg-product-resource
+          uri: lb://acg-product-service
+          predicates:
+            - Path=/acg-resource/**
+
+jwt:
+  secret: "MySuperSecureJwtSecretKeyForHS256_123456"
+  expiration: 86400000
+  whitelist:
+    - /user/login
+    - /user/register
 
 
 
@@ -141,9 +141,9 @@
 #    - /user/register
 
 
-
-spring:
-  cloud:
-    nacos:
-      server-addr: nacos:8848
+#
+#spring:
+#  cloud:
+#    nacos:
+#      server-addr: nacos:8848
 

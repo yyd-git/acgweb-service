@@ -1,32 +1,42 @@
 <template>
   <div class="container">
     <img
-      src="https://i.pinimg.com/originals/50/2f/5d/502f5d95c5f7a1b6e2e1eeb0f9e1d1c5.png"
+      :src="loginImg"
       alt="anime"
       class="anime-image"
     />
     <h1>登录</h1>
+
     <el-input
       v-model="username"
       placeholder="用户名"
       class="input-box"
     ></el-input>
+
     <el-input
       v-model="password"
       placeholder="密码"
       type="password"
       class="input-box"
     ></el-input>
-    <el-button type="primary" @click="login" class="btn">登录</el-button>
+
+    <el-button type="primary" @click="login" class="btn">
+      登录
+    </el-button>
+
     <el-button type="text" @click="goRegister" class="toggle-btn">
       去注册
     </el-button>
-    <div class="message" :style="{ color: messageColor }">{{ message }}</div>
+
+    <div class="message" :style="{ color: messageColor }">
+      {{ message }}
+    </div>
   </div>
 </template>
 
 <script>
 import http from "@/utils/http";
+import loginImg from "@/assets/upimg.jpg"; // ✅ 本地图片
 
 export default {
   name: "LoginView",
@@ -36,6 +46,7 @@ export default {
       password: "",
       message: "",
       messageColor: "red",
+      loginImg, // ✅ 绑定图片
     };
   },
   methods: {
@@ -53,11 +64,13 @@ export default {
 
       try {
         const data = await http.post("/user/login", params, {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         });
 
         if (data.code === 1 && data.msg === "success") {
-          const token = data.data; // ✅ 正确位置
+          const token = data.data;
           localStorage.setItem("token", token);
 
           this.message = "登录成功";
@@ -99,32 +112,41 @@ export default {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
   margin: 50px auto;
 }
+
 h1 {
   margin-bottom: 30px;
   color: #ffeaa7;
 }
+
 .input-box {
   width: 100%;
   margin-bottom: 15px;
 }
+
 .btn {
   width: 100%;
   margin: 15px 0;
 }
+
 .toggle-btn {
   margin-top: 10px;
 }
+
 .message {
   margin-top: 10px;
   font-size: 12px;
   height: 18px;
   word-break: break-word;
 }
+
 .anime-image {
   width: 100px;
+  height: auto;
   margin-bottom: 20px;
+  object-fit: contain;
   animation: float 2s ease-in-out infinite;
 }
+
 @keyframes float {
   0%,
   100% {
